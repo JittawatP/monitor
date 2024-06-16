@@ -1,16 +1,8 @@
 from flask import Flask, jsonify, render_template
-import mysql.connector
+from database import get_connection
 
 app = Flask(__name__)
 
-def get_connection():
-# ข้อมูลสำหรับเชื่อมต่อกับ MySQL
-    return mysql.connector.connect(
-            host = '192.168.1.14',
-            user = 'Bank',
-            password = 'P@ssword1',
-            database = 'foamwebdev'
-    )
  
 @app.route('/api/monitor804', methods=['GET'])
 def get_data_monitor():
@@ -45,7 +37,7 @@ def get_data_monitor():
                 FROM ( \
                     SELECT DISTINCT DATE_FORMAT(`rt`.`created`, '%Y-%m-%d') AS `date_str` \
                     FROM `focuslabs_resulttags` `rt` \
-                    WHERE `rt`.`created` >= (NOW() - INTERVAL 14 DAY) \
+                    WHERE `rt`.`created` >= (DATE(NOW() - INTERVAL 14 DAY)) \
                 ) AS dates \
                 LEFT JOIN ( \
                     SELECT \
@@ -104,7 +96,7 @@ def get_data_monitor():
                     INNER JOIN `tbltimeanalysis` `ta` ON `ta`.`ta_batch` = `r`.`batch` \
                     INNER JOIN `sample_lab_do_vw` `labdo` ON `labdo`.`sample#` = `r`.`sample#` \
                     WHERE \
-                        `ta`.`ta_ent_dt` >= (NOW() - INTERVAL 14 DAY) \
+                        `ta`.`ta_ent_dt` >= (DATE(NOW() - INTERVAL 14 DAY)) \
                     GROUP BY `date_str` \
                 ) AS input_data ON dates.date_str = input_data.date_str \
                 LEFT JOIN ( \
@@ -164,7 +156,7 @@ def get_data_monitor():
                     INNER JOIN `sample_lab_do_vw` `labdo` ON `labdo`.`sample#` = `rt`.`result_id` \
                     WHERE \
                         `t`.`name` IN ('pqindex','rde', 'rfs', 'v40', 'v100', 'ftir', 'tan', 'tbn', 'kf', 'fuel', 'pc') \
-                        AND `rt`.`created` >= (NOW() - INTERVAL 14 DAY) \
+                        AND `rt`.`created` >= (DATE(NOW() - INTERVAL 14 DAY)) \
                     GROUP BY `date_str` \
                 ) AS output_data ON dates.date_str = output_data.date_str \
                 ORDER BY dates.date_str DESC;"
@@ -233,21 +225,44 @@ def get_data_monitor():
                 FROM sample_lab_do_vw labdo \
                 inner join tblresult r on labdo.`sample#` = r.`sample#` \
                 inner join tbltimeanalysis ta on r.batch = ta.ta_batch \
-                where r.drecieved >= (NOW() - INTERVAL 14 DAY) AND (`labdo`.`ta_status` = 'LAB');"
+                where r.drecieved >= (DATE(NOW() - INTERVAL 14 DAY)) AND (`labdo`.`ta_status` = 'LAB');"
 
+    sqlinlab = "SELECT \
+                    DATE_FORMAT(IncomingReceivedDate,'%Y-%m-%d') as date_str , \
+                    sum(IncomingAmount) as input \
+                FROM tblincoming \
+                WHERE (IncomingReceivedDate >= DATE(NOW() - INTERVAL 14 DAY)) \
+                GROUP BY IncomingReceivedDate \
+                ORDER BY IncomingReceivedDate desc;"
+    
+    sqloutput = "SELECT \
+                    'Sent' AS operation,count(tblresult.`sample#`) as output, \
+                    DATE_FORMAT(tbltimeanalysis.ta_sent_dt, '%Y-%m-%d') as date_str \
+                FROM tblresult \
+                INNER JOIN tbltimeanalysis on tblresult.batch = tbltimeanalysis.ta_batch \
+                WHERE tbltimeanalysis.ta_sent_dt >= DATE(NOW() - INTERVAL 14 DAY) \
+                GROUP BY DATE_FORMAT(tbltimeanalysis.ta_sent_dt, '%Y-%m-%d');"
     cursor.execute(sql1inout)  
     data1 = cursor.fetchall()
 
     cursor.execute(sql2acc)  
     data2 = cursor.fetchall()
 
+    cursor.execute(sqlinlab)  
+    data3 = cursor.fetchall()
+
+    cursor.execute(sqloutput)  
+    data4 = cursor.fetchall()
+
+
+
+
     conn.close()
 
-    combined_data = combine_and_sort_data(data1,data2)
-
+    combined_data = combine_and_sort_data(data1,data2,data3,data4)
     return jsonify(combined_data)
 
-def combine_and_sort_data(data1,data2):
+def combine_and_sort_data(data1,data2,data3,data4):
     combined_data =[]
     for i, d1 in enumerate(data1):
         if i < len(data2):
@@ -355,6 +370,19 @@ def combine_and_sort_data(data1,data2):
                 'pc_output': d1['pcoutput'],
                 'pc_acc': ''
             })
+    for d1 in combined_data:
+        for d3 in data3:
+            if d1['date_str'] == d3['date_str']:
+                d1.update({
+                    'input': d3['input']
+                })
+    for d1 in combined_data:
+        for d4 in data4:
+            if d1['date_str'] == d4['date_str']:
+                d1.update({
+                    'output' : d4['output']
+                    })
+            
     return combined_data
 
 @app.route('/api/dashboard', methods=['GET'])
@@ -529,4 +557,4 @@ def dashboard():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0',port=5000,debug=True)
+    app.run(host='0.0.0.0',port=5500,debug=True)

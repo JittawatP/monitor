@@ -13,7 +13,7 @@
 #data-table td, #data-table th {
     border: 1px solid #dddddd;
     text-align: left;
-    padding: 8px 4px;
+    padding: 8px 3px;
 
 }
 
@@ -115,7 +115,7 @@
     align-items: center; /* Center content horizontally */
     border: 2px solid black; /* กำหนดกรอบ */
     padding: 20px; /* เว้นระยะภายในกรอบ */
-    margin: 50px auto; /* Center the main container horizontally */
+    margin: 20px auto; /* Center the main container horizontally */
     max-width: calc(7 * 185px + 6 * 30px); /* กำหนดขนาดกว้างสุดให้เท่ากับ grid-container */
 }
 .nav-bar {

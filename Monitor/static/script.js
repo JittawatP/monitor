@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Define the desired order of keys
             const keyOrder = [
                 'date_str',
+                'input',
                 'pqindex_input',
                 'pqindex_output',
                 'pqindex_acc',
@@ -43,14 +44,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 'fuel_acc',
                 'pc_input',
                 'pc_output',
-                'pc_acc'
+                'pc_acc',
+                'output'
             ];
 
             data.forEach(row => {
                 const tr = document.createElement('tr');
                 keyOrder.forEach(key => {  // Loop through keys in desired order
                     const td = document.createElement('td');
-                    td.textContent = row[key] || ''; // Set text content from corresponding key
+                    if (key ==='input' && !row[key]){
+                        td.textContent = 0;
+                    } else {
+                        td.textContent = row[key] || '';  // Set text content from corresponding key
+                    }
                      // Apply class based on the key
                     //  if (['pqindex_input', 'pqindex_output', 'pqindex_acc', 'icp_input', 'icp_output', 'icp_acc', 'rde_input', 'rde_output', 'rde_acc', 'rfs_input', 'rfs_output', 'rfs_acc'].includes(key)) {
                     //     td.classList.add('blue-background');
