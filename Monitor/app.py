@@ -225,7 +225,9 @@ def get_data_monitor():
                 FROM sample_lab_do_vw labdo \
                 inner join tblresult r on labdo.`sample#` = r.`sample#` \
                 inner join tbltimeanalysis ta on r.batch = ta.ta_batch \
-                where r.drecieved >= (DATE(NOW() - INTERVAL 14 DAY)) AND (`labdo`.`ta_status` = 'LAB');"
+                where r.drecieved >= (DATE(NOW() - INTERVAL 14 DAY)) \
+                AND `labdo`.`sample#` >= 24060000 \
+                AND (`labdo`.`ta_status` <> 'Finished');"
 
     sqlinlab = "SELECT \
                     DATE_FORMAT(IncomingReceivedDate,'%Y-%m-%d') as date_str , \
@@ -533,7 +535,9 @@ def get_data_dashboard():
 FROM sample_lab_do_vw labdo \
 left join tblresult r on labdo.`sample#` = r.`sample#` \
 left join tbltimeanalysis ta on r.batch = ta.ta_batch \
-where r.drecieved > (NOW() - INTERVAL 180 DAY) AND (`labdo`.`ta_status` = 'LAB');"
+where r.drecieved > (NOW() - INTERVAL 180 DAY) \
+AND `labdo`.`sample#` >= 24060000 \
+AND (`labdo`.`ta_status` <> 'Finished');"
 
     cursor.execute(sqltxt)  
     data = cursor.fetchall()
