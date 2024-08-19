@@ -143,3 +143,118 @@
     text-decoration: underline; /* เพิ่มขีดเส้นใต้ */
 }
 
+#data-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* จัดปุ่มให้อยู่กลางแนวนอน */
+    padding: 20px;
+}
+
+.data-table-daily {
+    width: 575px; /* ขนาดตารางรวมทั้งหมด */
+    height: 470px;
+    border-collapse: collapse;
+}
+
+.data-table-daily th, .data-table-daily td {
+    width: 89px; /* ความกว้างของแต่ละช่อง */
+    height: 57px; /* ความสูงของแต่ละช่องในหัวตาราง */
+    border: 1.5px solid #000;
+    text-align: center;
+    box-sizing: border-box; /* รวมขอบและการเติมช่องภายในในการคำนวณขนาด */
+}
+
+.data-table-daily th {
+    background-color: #ddebf7; /* ช่องหัวตารางสีฟ้า */
+    color: #000000;
+    font-size: 14px; /* กำหนดขนาดฟอนต์ของ Header */
+}
+
+.data-table-daily th.blue {
+    background-color: #ddebf7; /* ช่องหัวตารางสีฟ้า */
+    color: #000000;
+}
+
+.data-table-daily th.red {
+    background-color: #ff0000; /* ช่องหัวตารางสีแดง */
+    color: #000000;
+}
+
+.data-table-daily .row {
+    height: 66px; /* ความสูงของแต่ละแถวที่เหลือ */
+    align-items: center;
+}
+
+.data-table-daily tr:nth-of-type(even) td {
+    background-color: #fff2cc; /* แถวคู่ (ไม่รวมแถวหัว) สีเหลือง */
+}
+
+.data-table-daily tr:nth-of-type(odd) td {
+    background-color: #c6e0b4; /* แถวคี่ (ไม่รวมแถวหัว) สีเขียว */
+}
+
+/* เลือก <td> ที่เป็นลูกหลานของ <tr> ที่มีคลาส .row */
+.data-table-daily .row td:nth-child(2),
+.data-table-daily .row td:nth-child(3),
+.data-table-daily .row td:nth-child(4),
+.data-table-daily .row td:nth-child(5),
+.data-table-daily .row td:nth-child(6)  {
+    font-size: 28px; /* ขนาดฟอนต์ที่ต้องการ */
+    font-weight: bold; /* ตัวหนา */
+}
+
+input {
+    width: 100%; /* ทำให้ช่องกรอกข้อมูลมีความกว้าง 100% ของเซลล์ */
+    height: 100%; /* ทำให้ช่องกรอกข้อมูลมีความสูง 100% ของเซลล์ */
+    box-sizing: border-box; /* ทำให้ขนาดรวมถึงขอบเขตและการเติมช่องภายใน */
+    border: none; /* ลบขอบของช่องกรอกข้อมูล */
+    text-align: center; /* จัดตำแหน่งข้อความให้อยู่กลางช่อง */
+    padding: 0; /* ลบการเติมช่องในตัวช่องกรอกข้อมูล */
+    font-size: 28px; /* กำหนดขนาดฟอนต์ที่ต้องการ */
+    font-weight: bold; /* ตัวหนา */
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none; /* ซ่อนปุ่มเพิ่ม/ลดขนาดในเบราว์เซอร์ที่ใช้ WebKit */
+    margin: 0; /* ลบระยะขอบ */
+}
+
+
+#submit-button {
+    background-color: #6aacf1; /* สีน้ำเงิน */
+  
+    color: #FFFFFF; /* สีข้อความขาว */
+    border: none; /* ลบขอบ */
+    border-radius: 5px; /* มุมโค้งมน */
+    padding: 10px 20px; /* ขนาดปุ่ม */
+    margin-top: 20px; /*  เว้นระยะ */
+    font-size: 16px; /* ขนาดข้อความ */
+    cursor: pointer; /* เปลี่ยนเคอร์เซอร์เมื่อวางเหนือปุ่ม */
+    transition: background-color 0.3s, transform 0.2s; /* เพิ่มการเปลี่ยนแปลงสีและการเคลื่อนไหว */
+}
+
+#submit-button:hover {
+    background-color: #0056b3; /* สีเมื่อวางเมาส์เหนือปุ่ม */
+}
+
+#submit-button:active {
+    background-color: #004080; /* สีเมื่อคลิกปุ่ม */
+    transform: scale(0.98); /* ขนาดปุ่มลดลงเล็กน้อยเมื่อคลิก */
+}
+
+#submit-button:focus {
+    outline: none; /* ลบขอบที่แสดงเมื่อปุ่มถูกเลือก */
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.5); /* เพิ่มเงาเมื่อปุ่มถูกเลือก */
+}
+
+#loading-message {
+    text-align: center;
+    color: #007bff;
+    font-size: 18px;
+    margin-top: 20px;
+}
+
+.hidden {
+    display: none;
+}

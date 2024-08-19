@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Report</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
+</head>
+<body>
+    <div class="main" style="border: 0px;margin-bottom: 0px;" >
+        <div class="nav-bar">
+            <a href="/dashboard" >Dashboard</a>
+            <a href="/monitor804" >Monitor 804</a>
+            <a href="/daily" class="active">Daily Report</a>
+        </div>
+    <h1>Daily Report</h1>
+    <form id="data-form">
+        <table class="data-table-daily">
+            <tr>
+                <th class="blue">Date: <br>{{ today }}</th>
+                <th class ="red">Previous <br> Accumulation</th>
+                <th class ="red">Input</th>
+                <th class ="red">Output</th>
+                <th class ="red">Accumulation</th>
+                <th class ="red">Ferro</th>
+            </tr>
+            <tr class="row">
+                <td>Data Entry</td>
+                <!-- 2 -->
+                <td><input type="number" id="pre_acc_dataentry" name="pre_acc_dataentry"></td>
+                <td><input type="number" id="dataentry_input" name="dataentry_input"></td>
+                <td id="dataentry_output"></td>
+                <td id="dataentry_acc"></td>
+                <td></td>
+            </tr>
+            <tr class="row">
+                <td>Lab</td>
+                <!-- 3 -->
+                <td><input type="number" id="pre_acc_lab" name="pre_acc_lab"></td>
+                <td id="lab_input"></td>
+                <td id="lab_output"></td>
+                <td id="lab_acc"></td>
+                <td></td>
+            </tr>
+            <tr class="row">
+                <td>QC</td>
+                <!-- 4 -->
+                <td><input type="number" id="pre_acc_qc" name="pre_acc_qc"></td>
+                <td id="qc_input"></td>
+                <td id="qc_output"></td>
+                <td id="qc_acc"></td>
+                <td></td>
+            </tr>
+            <tr class="row">
+                <td>Interprete</td>
+                <!-- 5 -->
+                <td><input type="number" id="pre_acc_interp" name="pre_acc_interp"></td>
+                <td id="interp_input"></td>
+                <td id="interp_output"></td>
+                <td id="interp_acc"></td>
+                <td id="ferro_acc"></td>
+            </tr>
+            <tr class="row">
+                <td>Print</td>
+                <!-- 6 -->
+                <td><input type="number" id="pre_acc_print" name="pre_acc_print"></td>
+                <td id="print_input"></td>
+                <td id="print_output"></td>
+                <td id="print_acc"></td>
+                <td></td>
+            </tr>
+            <tr class="row">
+                <td>Sent</td>
+                <!-- 7 -->
+                <td><input type="number" id="pre_acc_sent" name="pre_acc_sent"></td>
+                <td id="sent_input"></td>
+                <td id="sent_output"></td>
+                <td id="sent_acc"></td>
+                <td></td>
+            </tr>
+        </table>
+        <button type="button" id="submit-button">Submit</button>
+        <div id="loading-message" class="hidden">กรุณารอ... ข้อมูลกำลังถูกโหลด</div>
+    </form>
+
+
+</body>
+<script src="{{url_for('static',filename = 'script.js')}}"></script>
+</html>

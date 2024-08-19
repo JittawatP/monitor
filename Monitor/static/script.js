@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+    
     fetch('/api/monitor804')
         .then(response => response.json())
         .then(data => {
@@ -161,4 +162,82 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .catch(error => console.error('Error fetching data:', error));
 
+
+ 
+            let clickCount = 0; 
+            document.getElementById("submit-button").addEventListener("click", function(event) {
+                event.preventDefault();
+        
+                clickCount++;
+                console.log(`จำนวนคลิก: ${clickCount}`);
+
+                 // แสดงข้อความรอ
+                document.getElementById("loading-message").classList.remove('hidden');
+
+                // ซ่อนปุ่ม submit
+                document.getElementById("submit-button").style.display = "none";
+
+        
+                // ดึงข้อมูลจากฟอร์ม ไม่ใช่จากปุ่ม
+                const form = document.getElementById("data-form");
+                const formData = new FormData(form);
+                
+                // console.log(formData);
+                fetch("/api/daily", {
+                    method: "POST",
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach(item => {
+                        console.log(item);
+                    });
+                    console.log("Data received:", data);
+                    updateTable(data);
+                    // ซ่อนข้อความรอ
+                    document.getElementById("loading-message").classList.add('hidden');
+                    
+                    // ซ่อนปุ่ม submit หลังจากที่ส่งข้อมูลเสร็จ
+                    document.getElementById("submit-button").style.display = "none";
+                    // เปลี่ยน <input> เป็น <td> ใหม่
+                    const inputElements = form.querySelectorAll('input');
+                    inputElements.forEach(input => {
+                        // สร้าง <td> ใหม่จากค่าใน <input>
+                        const newTd = document.createElement('td');
+                        newTd.textContent = input.value;
+                    
+                        // กำหนด id และ name ให้กับ <td>
+                        newTd.id = input.id;
+                        newTd.dataset.name = input.name;  // ใช้ data-attributes เพื่อเก็บ name
+
+                        // ลบเส้นกรอบจาก <td>
+                        newTd.style.border = 'none';
+                        newTd.style.align = 'center';
+                    
+                        // หาตำแหน่งของ <input> และแทนที่ด้วย <td>
+                        input.parentNode.replaceChild(newTd, input);
+                    });
+                })
+                .catch(error => console.error("Error:", error));
+            });
+        
+        
+    
+    function updateTable (data){
+        //วนลูป data
+        data.forEach(item => {
+            //ตรวจสอบ key แต่ละ object
+            for(const key in item) {
+                if(item.hasOwnProperty(key)) {
+                    const value = item[key];
+                    //update ค่าลงไปในช่องที่ตรงกับ id
+                    const cell = document.getElementById(key);
+                    if(cell){
+                        cell.innerHTML = value;
+                    }
+                }
+            }
+        });
+    }
 });
+

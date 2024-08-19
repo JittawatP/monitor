@@ -1,5 +1,6 @@
-from flask import Flask, jsonify, render_template
+from flask import Flask, jsonify, render_template,request
 from database import get_connection
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -255,9 +256,6 @@ def get_data_monitor():
 
     cursor.execute(sqloutput)  
     data4 = cursor.fetchall()
-
-
-
 
     conn.close()
 
@@ -545,7 +543,199 @@ AND (`labdo`.`ta_status` <> 'Finished');"
 
     return jsonify(data)
 
+def combine_daily(data1,data2,data3,data4,data5):
+    combined_data = []
+    # Map outputs to inputs
+    mapping = {
+        "dataentry_output": "lab_input",
+        "lab_output": "qc_input",
+        "qc_output": "interp_input",
+        "interp_output": "print_input",
+        "print_output": "sent_input"
+    }
+    # ดึงข้อมูลวันที่
+    combined_data.append({"date":data1[0]["date"]})
 
+
+    # ต่อข้อมูลจาก data1 ให้มี key เป็น operation และ output
+    for d1 in data1:
+        operation_key =d1["operation"].lower() + "_output"
+        output_value = d1["output"]
+        combined_data.append({operation_key: output_value})
+        if operation_key in mapping:
+            input_key = mapping[operation_key]            
+            combined_data.append({input_key: output_value})
+    # ต่อข้อมูลจาก data2 ให้มี key เป็น operation และ acc
+    for d2 in data2:
+        operation_key = d2["operation"].lower() + "_acc"
+        combined_data.append({operation_key: d2["Acc"]})
+
+    # ต่อข้อมูลจาก data3 (นำข้อมูลมาต่อเป็นพจนานุกรม)
+    combined_data.append({'dataentry_acc': data3[0]['dataAcc']})
+   
+    # ต่อข้อมูลจาก data4 (นำข้อมูลมาต่อเป็นพจนานุกรม)
+    combined_data.append({'ferro_acc': data4[0]['ferro']})
+
+    for item in combined_data:
+        if "interp_acc" in item:
+            item['interp_acc'] = int(item['interp_acc']) - int(data4[0]['ferro'])
+       
+    # ต่อข้อมูลจาก data5 (นำข้อมูลมาต่อเป็นพจนานุกรม)
+    for key, value in data5.items():
+        combined_data.append({key: value})
+    return combined_data
+
+@app.route('/api/daily', methods=['GET','POST'])
+def get_data_daily():
+    today = request.form.get('today', datetime.now().strftime('%Y-%m-%d 00:00:00')) #('%Y-%m-%d 00:00:00')
+    # รับข้อมูลจากฟอร์ม
+    form_data = request.form.to_dict()
+    # ตรวจสอบข้อมูลที่รับ
+    print("Received form data:", form_data)
+    pre_acc_dataentry = request.form.get('pre_acc_dataentry')
+    pre_acc_lab = request.form.get('pre_acc_lab')
+    pre_acc_qc = request.form.get('pre_acc_qc')
+    pre_acc_interp = request.form.get('pre_acc_interp')
+    pre_acc_print = request.form.get('pre_acc_print')
+    pre_acc_sent = request.form.get('pre_acc_sent')
+
+    dataentry_input = request.form.get('dataentry_input')
+    print("pre_acc_interpwwww",pre_acc_interp)
+    data5 = {
+        'dataentry_input' : dataentry_input,
+        'pre_acc_dataentry': pre_acc_dataentry,
+        'pre_acc_lab': pre_acc_lab,
+        'pre_acc_qc': pre_acc_qc,
+        'pre_acc_interp': pre_acc_interp,
+        'pre_acc_print': pre_acc_print,
+        'pre_acc_sent': pre_acc_sent  
+    }
+
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+    # กำหนดตัวแปร @tempDate ด้วยค่า today
+    cursor.execute("SET @tempDate = %s", (today,))
+
+    sqlOutPut = """ 
+        select * from (
+        select  'DataEntry' AS operation,count(tblResult.`sample#`) as output , DATE_FORMAT(tbltimeanalysis.ta_ent_dt, '%Y-%m-%d') as date
+        from tblresult inner join tbltimeanalysis on tblresult.batch = tbltimeanalysis.ta_batch
+        WHERE tblTimeAnalysis.ta_ent_dt >= @tempDate
+        group by tblTimeAnalysis.ta_ent_dt
+
+        union
+
+        select  'Lab' AS operation,count(tblresult.`sample#`) as output, DATE_FORMAT(tbltimeanalysis.ta_lab_dt, '%Y-%m-%d') as date 
+        from tblresult inner join tbltimeanalysis on tblresult.batch = tbltimeanalysis.ta_batch
+        where tbltimeanalysis.ta_lab_dt >= @tempDate
+        group by tblTimeanalysis.ta_lab_dt
+
+        union
+
+        select  'QC' AS operation,count(tblresult.`sample#`) as output, DATE_FORMAT(tbltimeanalysis.ta_qc_dt, '%Y-%m-%d') as date 
+        from tblresult inner join tbltimeanalysis on tblresult.batch = tbltimeanalysis.ta_batch
+        where tbltimeanalysis.ta_qc_dt >= @tempDate
+        group by tblTimeanalysis.ta_qc_dt
+
+        union
+
+        select  'Interp' AS operation,count(tblresult.`sample#`) as output, DATE_FORMAT(tbltimeanalysis.ta_int2_dt, '%Y-%m-%d') as date 
+        from tblresult inner join tbltimeanalysis on tblresult.batch = tbltimeanalysis.ta_batch
+        where tbltimeanalysis.ta_int2_dt >= @tempDate
+        group by tblTimeanalysis.ta_int2_dt
+
+        union
+
+        select  'Print' AS operation,count(tblresult.`sample#`) as output, DATE_FORMAT(tbltimeanalysis.ta_prt_dt, '%Y-%m-%d') as date 
+        from tblresult inner join tbltimeanalysis on tblresult.batch = tbltimeanalysis.ta_batch
+        where tbltimeanalysis.ta_prt_dt >= @tempDate
+        group by tblTimeanalysis.ta_prt_dt
+
+        union
+
+        select  'Sent' AS operation,count(tblresult.`sample#`) as output, DATE_FORMAT(tbltimeanalysis.ta_sent_dt, '%Y-%m-%d') as date 
+        from tblresult inner join tbltimeanalysis on tblresult.batch = tbltimeanalysis.ta_batch
+        where tbltimeanalysis.ta_sent_dt >= @tempDate
+        group by tblTimeanalysis.ta_sent_dt) as result_set
+        order by date desc;
+        """
+    
+    sqlAcc = """
+        select 'LAB' as operation, count(r.`sample#`) as Acc from tbltimeanalysis ta
+            inner join tblresult r on r.batch = ta.ta_batch
+            where r.`sample#` > 23110000 and ta.ta_ent_dt is not null and ta.ta_lab_dt is null and (ta.ta_complete is null or ta.ta_complete <> 1)
+        union
+        select 'QC' as operation, count(r.`sample#`) as Acc from tbltimeanalysis ta
+            inner join tblresult r on r.batch = ta.ta_batch
+            where r.`sample#` > 23110000 and ta.ta_lab_dt is not null and ta.ta_qc_dt is null and (ta.ta_complete is null or ta.ta_complete <> 1)
+        union
+        select 'Interp' as operation, count(r.`sample#`) as Acc from tbltimeanalysis ta
+            inner join tblresult r on r.batch = ta.ta_batch
+            where r.`sample#` > 23110000 and ta.ta_qc_dt is not null and ta.ta_int2_dt is null and (ta.ta_complete is null or ta.ta_complete <> 1)
+        union
+            select 'Print' as operation, count(r.`sample#`) as Acc from tbltimeanalysis ta
+            inner join tblresult r on r.batch = ta.ta_batch
+            where r.`sample#` > 23110000 and ta.ta_int2_dt is not null and ta.ta_prt_dt is null and (ta.ta_complete is null or ta.ta_complete <> 1)
+        union
+        select 'Sent' as operation, count(r.`sample#`) as Acc from tbltimeanalysis ta
+            inner join tblresult r on r.batch = ta.ta_batch
+            where r.`sample#` > 23110000 and ta.ta_prt_dt is not null and ta.ta_sent_dt is null and (ta.ta_complete is null or ta.ta_complete <> 1);
+
+    """
+
+    sqlAccDataEntery = """
+        SELECT 
+            (SELECT SUM(ic.IncomingAmount) 
+             FROM tblincoming ic 
+             WHERE ic.IncomingReceivedDate > '2024-01-01') 
+            - 
+            (SELECT COUNT(ir.result_id_id) 
+             FROM tblincoming ic
+             LEFT JOIN tblincomingresult ir on ir.incoming_id_id = ic.`No`
+             INNER JOIN tblresult r on r.`sample#` = ir.result_id_id
+             INNER JOIN tbltimeanalysis ta on ta.ta_batch = r.batch
+             WHERE ic.IncomingReceivedDate > '2024-01-01' and ta.ta_ent_dt is not null) 
+        AS dataAcc;
+    """
+
+    sqlAccFerro = """
+        SELECT 
+             count(`lab_do`.`sample#`) AS `ferro`
+        FROM
+            ((((`sample_lab_do_vw` `lab_do`
+            LEFT JOIN `tblresult` `result` ON ((`result`.`sample#` = `lab_do`.`sample#`)))
+            LEFT JOIN `tblunit` `unit` ON ((`unit`.`unitnumber` = `result`.`unitid`)))
+            LEFT JOIN `tblcustomer` `cus` ON ((`cus`.`customer#` = `unit`.`cusnum`)))
+            LEFT JOIN `tbltimeanalysis` `time_ana` ON ((`time_ana`.`ta_batch` = `result`.`batch`)))
+        WHERE
+            `result`.`drecieved`  > DATE_SUB(CURDATE(), INTERVAL 180 DAY)
+                #AND (`lab_do`.`ta_status` = 'Interpret')
+                AND `result`.`sample#` >= 24060000
+                AND (`time_ana`.`ta_status` <> 'Finished')
+                AND (`lab_do`.`FerroCheck` = 1)
+                AND (`result`.`ferVol` IS NULL)
+                AND (select id from focuslabs_resulttags rt where rt.result_id = result.`sample#` and tags_id = 41 limit 1) is null
+                AND (select id from focuslabs_resulttags rt where rt.result_id = result.`sample#` and tags_id = 40 limit 1) is not null
+        ORDER BY `result`.`drecieved`;
+    """
+
+    cursor.execute(sqlOutPut)
+    data1 = cursor.fetchall()
+
+    cursor.execute(sqlAcc)
+    data2 = cursor.fetchall()
+
+    cursor.execute(sqlAccDataEntery)
+    data3 = cursor.fetchall()
+
+    cursor.execute(sqlAccFerro)
+    data4 = cursor.fetchall()
+    conn.close()
+
+    combile_data = combine_daily(data1,data2,data3,data4,data5)
+
+    # return jsonify(data5)
+    return jsonify(combile_data)
 
 @app.route('/')
 def index():
@@ -558,6 +748,11 @@ def monitor804():
 @app.route('/dashboard')
 def dashboard():
     return render_template('dashboard.html')
+
+@app.route('/daily')
+def daily():
+    today = request.form.get('today', datetime.now().strftime('%d-%b-%Y')) #('%Y-%m-%d 00:00:00')
+    return render_template('daily.html', today=today)
 
 
 if __name__ == '__main__':
