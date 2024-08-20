@@ -720,15 +720,24 @@ def get_data_daily():
     """
 
     cursor.execute(sqlOutPut)
-    data1 = cursor.fetchall()
+    data1 = cursor.fetchall() or [{'operation': 'DataEntry', 'output': 0, 'date': None},
+                                  {'operation': 'Lab', 'output': 0, 'date': None},
+                                  {'operation': 'QC', 'output': 0, 'date': None},
+                                  {'operation': 'Interp', 'output': 0, 'date': None},
+                                  {'operation': 'Print', 'output': 0, 'date': None},
+                                  {'operation': 'Sent', 'output': 0, 'date': None}]
 
     cursor.execute(sqlAcc)
-    data2 = cursor.fetchall()
+    data2 = cursor.fetchall() or [{'operation': 'LAB', 'Acc': 0},
+                                  {'operation': 'QC', 'Acc': 0},
+                                  {'operation': 'Interp', 'Acc': 0},
+                                  {'operation': 'Print', 'Acc': 0},
+                                  {'operation': 'Sent', 'Acc': 0}]
 
     cursor.execute(sqlAccDataEntery)
-    data3 = cursor.fetchall()
+    data3 = cursor.fetchall() or {'dataAcc': 0}
 
-    cursor.execute(sqlAccFerro)
+    cursor.execute(sqlAccFerro) or {'ferro': 0}
     data4 = cursor.fetchall()
     conn.close()
 
