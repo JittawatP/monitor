@@ -1,82 +1,86 @@
 document.addEventListener('DOMContentLoaded', () => {
-    
-    fetch('/api/monitor804')
-        .then(response => response.json())
-        .then(data => {
-            const tableBody = document.querySelector('#data-table tbody');
-            tableBody.innerHTML = '';  // Clear existing table data
-            
-            // Define the desired order of keys
-            const keyOrder = [
-                'date_str',
-                'input',
-                'pqindex_input',
-                'pqindex_output',
-                'pqindex_acc',
-                'icp_input',
-                'icp_output',
-                'icp_acc',
-                'rde_input',
-                'rde_output',
-                'rde_acc',
-                'rfs_input',
-                'rfs_output',
-                'rfs_acc',
-                'v40_input',
-                'v40_output',
-                'v40_acc',
-                'v100_input',
-                'v100_output',
-                'v100_acc',
-                'ftir_input',
-                'ftir_output',
-                'ftir_acc',
-                'an_input',
-                'an_output',
-                'an_acc',
-                'bn_input',
-                'bn_output',
-                'bn_acc',
-                'kf_input',
-                'kf_output',
-                'kf_acc',
-                'fuel_input',
-                'fuel_output',
-                'fuel_acc',
-                'pc_input',
-                'pc_output',
-                'pc_acc',
-                'output'
-            ];
+    // ตรวจสอบว่า /monitor804 เป็น active หรือไม่
+    if (document.querySelector('a[href="/monitor804"]').classList.contains('active')) {
+        fetch('/api/monitor804')
+            .then(response => response.json())
+            .then(data => {
+                const tableBody = document.querySelector('#data-table tbody');
+                tableBody.innerHTML = '';  // Clear existing table data
 
-            data.forEach(row => {
-                const tr = document.createElement('tr');
-                keyOrder.forEach(key => {  // Loop through keys in desired order
-                    const td = document.createElement('td');
-                    if (key ==='input' && !row[key]){
-                        td.textContent = 0;
-                    } else {
-                        td.textContent = row[key] || '';  // Set text content from corresponding key
-                    }
-                     // Apply class based on the key
-                    //  if (['pqindex_input', 'pqindex_output', 'pqindex_acc', 'icp_input', 'icp_output', 'icp_acc', 'rde_input', 'rde_output', 'rde_acc', 'rfs_input', 'rfs_output', 'rfs_acc'].includes(key)) {
-                    //     td.classList.add('blue-background');
-                    // } else if (['v40_input', 'v40_output', 'v40_acc', 'v100_input', 'v100_output', 'v100_acc', 'ftir_input', 'ftir_output', 'ftir_acc', 'an_input', 'an_output', 'an_acc', 'bn_input', 'bn_output', 'bn_acc'].includes(key)) {
-                    //     td.classList.add('yellow-background');
-                    // } else if (['kf_input', 'kf_output', 'kf_acc', 'fuel_input', 'fuel_output', 'fuel_acc', 'pc_input', 'pc_output', 'pc_acc'].includes(key)) {
-                    //     td.classList.add('purple-background');
-                    // }
-                    tr.appendChild(td);
+                // Define the desired order of keys
+                const keyOrder = [
+                    'date_str',
+                    'input',
+                    'pqindex_input',
+                    'pqindex_output',
+                    'pqindex_acc',
+                    'icp_input',
+                    'icp_output',
+                    'icp_acc',
+                    'rde_input',
+                    'rde_output',
+                    'rde_acc',
+                    'rfs_input',
+                    'rfs_output',
+                    'rfs_acc',
+                    'v40_input',
+                    'v40_output',
+                    'v40_acc',
+                    'v100_input',
+                    'v100_output',
+                    'v100_acc',
+                    'ftir_input',
+                    'ftir_output',
+                    'ftir_acc',
+                    'an_input',
+                    'an_output',
+                    'an_acc',
+                    'bn_input',
+                    'bn_output',
+                    'bn_acc',
+                    'kf_input',
+                    'kf_output',
+                    'kf_acc',
+                    'fuel_input',
+                    'fuel_output',
+                    'fuel_acc',
+                    'pc_input',
+                    'pc_output',
+                    'pc_acc',
+                    'output'
+                ];
+
+                data.forEach(row => {
+                    const tr = document.createElement('tr');
+                    keyOrder.forEach(key => {  // Loop through keys in desired order
+                        const td = document.createElement('td');
+                        if (key ==='input' && !row[key]){
+                            td.textContent = 0;
+                        } else {
+                            td.textContent = row[key] || '';  // Set text content from corresponding key
+                        }
+                         // Apply class based on the key
+                        //  if (['pqindex_input', 'pqindex_output', 'pqindex_acc', 'icp_input', 'icp_output', 'icp_acc', 'rde_input', 'rde_output', 'rde_acc', 'rfs_input', 'rfs_output', 'rfs_acc'].includes(key)) {
+                        //     td.classList.add('blue-background');
+                        // } else if (['v40_input', 'v40_output', 'v40_acc', 'v100_input', 'v100_output', 'v100_acc', 'ftir_input', 'ftir_output', 'ftir_acc', 'an_input', 'an_output', 'an_acc', 'bn_input', 'bn_output', 'bn_acc'].includes(key)) {
+                        //     td.classList.add('yellow-background');
+                        // } else if (['kf_input', 'kf_output', 'kf_acc', 'fuel_input', 'fuel_output', 'fuel_acc', 'pc_input', 'pc_output', 'pc_acc'].includes(key)) {
+                        //     td.classList.add('purple-background');
+                        // }
+                        tr.appendChild(td);
+                    });
+                    tableBody.appendChild(tr);
                 });
-                tableBody.appendChild(tr);
-            });
-        })
-        .catch(error => console.error('Error fetching data:', error));
+            })
+            .catch(error => console.error('Error fetching data:', error));
 
+    }
 
-    fetch('/api/dashboard')
-        .then(response => response.json())
-        .then(data => {
+    // ตรวจสอบว่า /dashboard เป็น active หรือไม่
+    if (document.querySelector('a[href="/dashboard"]').classList.contains('active')) {
+        fetch('/api/dashboard')
+            .then(response => response.json())
+            .then(data => {
             const keyOrder = [
                 { key: "pqindexacc", label: "PQ/SS", valueId: "pqss-value" },
                 { key: "rdeacc", label: "RDE", valueId: "rde-value" },
@@ -159,70 +163,63 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 
             }
-        })
-        .catch(error => console.error('Error fetching data:', error));
+            })
+            .catch(error => console.error('Error fetching data:', error));
+    }
 
-
- 
-            let clickCount = 0; 
-            document.getElementById("submit-button").addEventListener("click", function(event) {
-                event.preventDefault();
+    if (document.querySelector('a[href="/daily"]').classList.contains('active')) {    
+        let clickCount = 0; 
+        document.getElementById("submit-button").addEventListener("click", function(event) {
+            event.preventDefault();
         
-                clickCount++;
-                console.log(`จำนวนคลิก: ${clickCount}`);
-
-                 // แสดงข้อความรอ
-                document.getElementById("loading-message").classList.remove('hidden');
-
-                // ซ่อนปุ่ม submit
+            clickCount++;
+            console.log(`จำนวนคลิก: ${clickCount}`);
+             // แสดงข้อความรอ
+            document.getElementById("loading-message").classList.remove('hidden');
+            // ซ่อนปุ่ม submit
+            document.getElementById("submit-button").style.display = "none";
+        
+            // ดึงข้อมูลจากฟอร์ม ไม่ใช่จากปุ่ม
+            const form = document.getElementById("data-form");
+            const formData = new FormData(form);
+            // console.log(formData);
+            fetch("/api/daily", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // data.forEach(item => {
+                //     console.log(item);
+                // });
+                // console.log("Data received:", data);
+                updateTable(data);
+                // ซ่อนข้อความรอ
+                document.getElementById("loading-message").classList.add('hidden');
+                // ซ่อนปุ่ม submit หลังจากที่ส่งข้อมูลเสร็จ
                 document.getElementById("submit-button").style.display = "none";
-
-        
-                // ดึงข้อมูลจากฟอร์ม ไม่ใช่จากปุ่ม
-                const form = document.getElementById("data-form");
-                const formData = new FormData(form);
+                // เปลี่ยน <input> เป็น <td> ใหม่
+                const inputElements = form.querySelectorAll('input');
+                inputElements.forEach(input => {
+                    // สร้าง <td> ใหม่จากค่าใน <input>
+                    const newTd = document.createElement('td');
+                    newTd.textContent = input.value;
                 
-                // console.log(formData);
-                fetch("/api/daily", {
-                    method: "POST",
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    data.forEach(item => {
-                        console.log(item);
-                    });
-                    console.log("Data received:", data);
-                    updateTable(data);
-                    // ซ่อนข้อความรอ
-                    document.getElementById("loading-message").classList.add('hidden');
-                    
-                    // ซ่อนปุ่ม submit หลังจากที่ส่งข้อมูลเสร็จ
-                    document.getElementById("submit-button").style.display = "none";
-                    // เปลี่ยน <input> เป็น <td> ใหม่
-                    const inputElements = form.querySelectorAll('input');
-                    inputElements.forEach(input => {
-                        // สร้าง <td> ใหม่จากค่าใน <input>
-                        const newTd = document.createElement('td');
-                        newTd.textContent = input.value;
-                    
-                        // กำหนด id และ name ให้กับ <td>
-                        newTd.id = input.id;
-                        newTd.dataset.name = input.name;  // ใช้ data-attributes เพื่อเก็บ name
+                    // กำหนด id และ name ให้กับ <td>
+                    newTd.id = input.id;
+                    newTd.dataset.name = input.name;  // ใช้ data-attributes เพื่อเก็บ name
+                    // ลบเส้นกรอบจาก <td>
+                    newTd.style.border = 'none';
+                    newTd.style.align = 'center';
+                
+                    // หาตำแหน่งของ <input> และแทนที่ด้วย <td>
+                    input.parentNode.replaceChild(newTd, input);
+                });
+            })
+            .catch(error => console.error("Error:", error));
+        });
+    }
 
-                        // ลบเส้นกรอบจาก <td>
-                        newTd.style.border = 'none';
-                        newTd.style.align = 'center';
-                    
-                        // หาตำแหน่งของ <input> และแทนที่ด้วย <td>
-                        input.parentNode.replaceChild(newTd, input);
-                    });
-                })
-                .catch(error => console.error("Error:", error));
-            });
-        
-        
-    
     function updateTable (data){
         //วนลูป data
         data.forEach(item => {
